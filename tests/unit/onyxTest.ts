@@ -3,8 +3,7 @@ import Onyx from '../../lib';
 import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import OnyxUtils from '../../lib/OnyxUtils';
 import type OnyxCache from '../../lib/OnyxCache';
-import type {OnyxCollection, OnyxUpdate} from '../../lib/types';
-import type GenericCollection from '../utils/GenericCollection';
+import type {OnyxCollection, OnyxUpdate, GenericCollection} from '../../lib/types';
 
 const ONYX_KEYS = {
     TEST_KEY: 'test',

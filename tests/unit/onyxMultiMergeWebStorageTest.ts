@@ -3,7 +3,7 @@ import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import Storage from '../../lib/storage';
 import type MockedStorage from '../../lib/storage/__mocks__';
 import type OnyxInstance from '../../lib/Onyx';
-import type GenericCollection from '../utils/GenericCollection';
+import type {GenericCollection} from '../../lib/types';
 
 const StorageMock = Storage as unknown as typeof MockedStorage;
 

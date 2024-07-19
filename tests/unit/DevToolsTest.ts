@@ -5,7 +5,7 @@ import Onyx from '../../lib';
 import type {DevtoolsConnection} from '../../lib/DevTools';
 import DevTools from '../../lib/DevTools';
 import utils from '../../lib/utils';
-import type GenericCollection from '../utils/GenericCollection';
+import type {GenericCollection} from '../../lib/types';
 
 const ONYX_KEYS = {
     NUM_KEY: 'numKey',

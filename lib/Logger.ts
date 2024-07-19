@@ -1,17 +1,38 @@
+import type {OnyxKey, OnyxMethod} from './types';
+
 type LogData = {
     message: string;
     level: 'alert' | 'info' | 'hmmm';
 };
 type LoggerCallback = (data: LogData) => void;
 
+type OnyxUpdatesListenerLogData = {
+    date: string;
+    method?: OnyxMethod;
+    key?: OnyxKey;
+    data: unknown;
+    trace?: string;
+};
+type OnyxUpdatesListenerCallback = (data: OnyxUpdatesListenerLogData) => void;
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 let logger: LoggerCallback = () => {};
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+let onyxUpdatesListener: OnyxUpdatesListenerCallback = () => {};
 
 /**
  * Register the logging callback
  */
 function registerLogger(callback: LoggerCallback) {
     logger = callback;
+}
+
+function registerOnyxUpdatesListener(callback: OnyxUpdatesListenerCallback) {
+    onyxUpdatesListener = callback;
+}
+
+function logOnyxUpdate(data: OnyxUpdatesListenerLogData) {
+    onyxUpdatesListener({...data, trace: Error().stack});
 }
 
 /**
@@ -35,4 +56,4 @@ function logHmmm(message: string) {
     logger({message: `[Onyx] ${message}`, level: 'hmmm'});
 }
 
-export {registerLogger, logInfo, logAlert, logHmmm};
+export {registerLogger, registerOnyxUpdatesListener, logOnyxUpdate, logInfo, logAlert, logHmmm};

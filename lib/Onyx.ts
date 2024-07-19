@@ -24,6 +24,7 @@ import type {
     OnyxUpdate,
     OnyxValue,
     OnyxInput,
+    GenericCollection,
 } from './types';
 import OnyxUtils from './OnyxUtils';
 import logMessages from './logMessages';
@@ -224,6 +225,8 @@ function disconnect(connectionID: number, keyToRemoveFromEvictionBlocklist?: Ony
  * @param value value to store
  */
 function set<TKey extends OnyxKey>(key: TKey, value: OnyxSetInput<TKey>): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), method: OnyxUtils.METHOD.SET, key, data: value});
+
     // When we use Onyx.set to set a key we want to clear the current delta changes from Onyx.merge that were queued
     // before the value was set. If Onyx.merge is currently reading the old value from storage, it will then not apply the changes.
     if (OnyxUtils.hasPendingMergeForKey(key)) {
@@ -292,6 +295,8 @@ function set<TKey extends OnyxKey>(key: TKey, value: OnyxSetInput<TKey>): Promis
  * @param data object keyed by ONYXKEYS and the values to set
  */
 function multiSet(data: OnyxMultiSetInput): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), method: OnyxUtils.METHOD.MULTI_SET, data});
+
     const keyValuePairsToSet = OnyxUtils.prepareKeyValuePairsForStorage(data, true);
 
     const updatePromises = keyValuePairsToSet.map(([key, value]) => {
@@ -328,6 +333,8 @@ function multiSet(data: OnyxMultiSetInput): Promise<void> {
  * Onyx.merge(ONYXKEYS.POLICY, {name: 'My Workspace'}); // -> {id: 1, name: 'My Workspace'}
  */
 function merge<TKey extends OnyxKey>(key: TKey, changes: OnyxMergeInput<TKey>): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), method: OnyxUtils.METHOD.MERGE, key, data: changes});
+
     const mergeQueue = OnyxUtils.getMergeQueue();
     const mergeQueuePromise = OnyxUtils.getMergeQueuePromise();
 
@@ -437,6 +444,8 @@ function merge<TKey extends OnyxKey>(key: TKey, changes: OnyxMergeInput<TKey>): 
  * @param collection Object collection keyed by individual collection member keys and values
  */
 function mergeCollection<TKey extends CollectionKeyBase, TMap>(collectionKey: TKey, collection: OnyxMergeCollectionInput<TKey, TMap>): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), method: OnyxUtils.METHOD.MERGE_COLLECTION, key: collectionKey, data: collection});
+
     if (typeof collection !== 'object' || Array.isArray(collection) || utils.isEmptyObject(collection)) {
         Logger.logInfo('mergeCollection() called with invalid or empty value. Skipping this update.');
         return Promise.resolve();
@@ -565,6 +574,8 @@ function mergeCollection<TKey extends CollectionKeyBase, TMap>(collectionKey: TK
  * @param keysToPreserve is a list of ONYXKEYS that should not be cleared with the rest of the data
  */
 function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), method: OnyxUtils.METHOD.CLEAR, data: keysToPreserve});
+
     return OnyxUtils.getAllKeys()
         .then((keys) => {
             cache.clearNullishStorageKeys();
@@ -697,6 +708,8 @@ function updateSnapshots(data: OnyxUpdate[]) {
  * @returns resolves when all operations are complete
  */
 function update(data: OnyxUpdate[]): Promise<void> {
+    Logger.logOnyxUpdate({date: new Date().toISOString(), data});
+
     // First, validate the Onyx object is in the format we expect
     data.forEach(({onyxMethod, key, value}) => {
         if (![OnyxUtils.METHOD.CLEAR, OnyxUtils.METHOD.SET, OnyxUtils.METHOD.MERGE, OnyxUtils.METHOD.MERGE_COLLECTION, OnyxUtils.METHOD.MULTI_SET].includes(onyxMethod)) {
@@ -724,8 +737,7 @@ function update(data: OnyxUpdate[]): Promise<void> {
                 promises.push(() => merge(key, value));
                 break;
             case OnyxUtils.METHOD.MERGE_COLLECTION:
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- We validated that the value is a collection
-                promises.push(() => mergeCollection(key, value as any));
+                promises.push(() => mergeCollection(key, value as GenericCollection));
                 break;
             case OnyxUtils.METHOD.MULTI_SET:
                 promises.push(() => multiSet(value));
@@ -756,6 +768,7 @@ const Onyx = {
     clear,
     init,
     registerLogger: Logger.registerLogger,
+    registerOnyxUpdatesListener: Logger.registerOnyxUpdatesListener,
 } as const;
 
 export default Onyx;

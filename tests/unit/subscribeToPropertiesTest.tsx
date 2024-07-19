@@ -6,7 +6,7 @@ import Onyx, {withOnyx} from '../../lib';
 import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import type {ViewWithObjectProps} from '../components/ViewWithObject';
 import ViewWithObject from '../components/ViewWithObject';
-import type GenericCollection from '../utils/GenericCollection';
+import type {GenericCollection} from '../../lib/types';
 
 const ONYX_KEYS = {
     TEST_KEY: 'test',

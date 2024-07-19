@@ -2,7 +2,7 @@ import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import StorageMock from '../../lib/storage';
 import Onyx from '../../lib/Onyx';
 import type OnyxCache from '../../lib/OnyxCache';
-import type GenericCollection from '../utils/GenericCollection';
+import type {GenericCollection} from '../../lib/types';
 
 const ONYX_KEYS = {
     DEFAULT_KEY: 'defaultKey',

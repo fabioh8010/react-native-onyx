@@ -1,4 +1,4 @@
-import type {Merge} from 'type-fest';
+import type {Merge, ValueOf} from 'type-fest';
 import type {BuiltIns} from 'type-fest/source/internal';
 import type OnyxUtils from './OnyxUtils';
 import type {WithOnyxInstance, WithOnyxState} from './withOnyx/types';
@@ -432,6 +432,10 @@ type InitOptions = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GenericFunction = (...args: any[]) => any;
 
+type GenericCollection = Collection<string, unknown, unknown>;
+
+type OnyxMethod = ValueOf<typeof OnyxUtils.METHOD>;
+
 export type {
     BaseConnectOptions,
     Collection,
@@ -468,4 +472,6 @@ export type {
     OnyxValue,
     Selector,
     WithOnyxConnectOptions,
+    GenericCollection,
+    OnyxMethod,
 };

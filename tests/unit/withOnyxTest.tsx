@@ -10,8 +10,7 @@ import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import type {ViewWithObjectProps} from '../components/ViewWithObject';
 import ViewWithObject from '../components/ViewWithObject';
 import StorageMock from '../../lib/storage';
-import type {OnyxValue} from '../../lib/types';
-import type GenericCollection from '../utils/GenericCollection';
+import type {OnyxValue, GenericCollection} from '../../lib/types';
 
 const ONYX_KEYS = {
     TEST_KEY: 'test',

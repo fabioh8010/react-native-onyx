@@ -3,7 +3,7 @@ import type {OnyxEntry} from '../../lib';
 import Onyx, {useOnyx} from '../../lib';
 import waitForPromisesToResolve from '../utils/waitForPromisesToResolve';
 import StorageMock from '../../lib/storage';
-import type GenericCollection from '../utils/GenericCollection';
+import type {GenericCollection} from '../../lib/types';
 
 const ONYXKEYS = {
     TEST_KEY: 'test',

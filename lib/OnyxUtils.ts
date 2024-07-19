@@ -2,7 +2,6 @@
 /* eslint-disable no-continue */
 import {deepEqual} from 'fast-equals';
 import lodashClone from 'lodash/clone';
-import type {ValueOf} from 'type-fest';
 import DevTools from './DevTools';
 import * as Logger from './Logger';
 import type Onyx from './Onyx';
@@ -23,6 +22,7 @@ import type {
     OnyxEntry,
     OnyxInput,
     OnyxKey,
+    OnyxMethod,
     OnyxValue,
     Selector,
     WithOnyxConnectOptions,
@@ -38,8 +38,6 @@ const METHOD = {
     MULTI_SET: 'multiset',
     CLEAR: 'clear',
 } as const;
-
-type OnyxMethod = ValueOf<typeof METHOD>;
 
 // Key/value store of Onyx key and arrays of values to merge
 const mergeQueue: Record<OnyxKey, Array<OnyxValue<OnyxKey>>> = {};
