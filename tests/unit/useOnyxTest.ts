@@ -144,6 +144,20 @@ describe('useOnyx', () => {
             expect(result.current[0]).toEqual('test2');
             expect(result.current[1].status).toEqual('loaded');
         });
+
+        it('should return loaded state after Onyx.clear() call while useOnyx was loading from cache', async () => {
+            await StorageMock.setItem(ONYXKEYS.TEST_KEY, 'test');
+
+            const {result} = renderHook(() => useOnyx(ONYXKEYS.TEST_KEY));
+
+            expect(result.current[0]).toBeUndefined();
+            expect(result.current[1].status).toEqual('loading');
+
+            await act(async () => Onyx.clear());
+
+            expect(result.current[0]).toBeUndefined();
+            expect(result.current[1].status).toEqual('loaded');
+        });
     });
 
     describe('selector', () => {
