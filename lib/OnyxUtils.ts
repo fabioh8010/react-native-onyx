@@ -480,23 +480,24 @@ function tryGetCachedValue<TKey extends OnyxKey>(key: TKey, mapping?: Partial<Ma
     let val = cache.get(key);
 
     if (isCollectionKey(key)) {
-        const allCacheKeys = cache.getAllKeys();
+        val = cache.getCollection(key);
+        // const allCacheKeys = cache.getAllKeys();
 
-        // It is possible we haven't loaded all keys yet so we do not know if the
-        // collection actually exists.
-        if (allCacheKeys.size === 0) {
-            return;
-        }
+        // // It is possible we haven't loaded all keys yet so we do not know if the
+        // // collection actually exists.
+        // if (allCacheKeys.size === 0) {
+        //     return;
+        // }
 
-        const values: OnyxCollection<KeyValueMapping[TKey]> = {};
-        allCacheKeys.forEach((cacheKey) => {
-            if (!cacheKey.startsWith(key)) {
-                return;
-            }
+        // const values: OnyxCollection<KeyValueMapping[TKey]> = {};
+        // allCacheKeys.forEach((cacheKey) => {
+        //     if (!cacheKey.startsWith(key)) {
+        //         return;
+        //     }
 
-            values[cacheKey] = cache.get(cacheKey);
-        });
-        val = values;
+        //     values[cacheKey] = cache.get(cacheKey);
+        // });
+        // val = values;
     }
 
     if (mapping?.selector) {
@@ -588,6 +589,8 @@ function keysChanged<TKey extends CollectionKeyBase>(
     notifyRegularSubscibers = true,
     notifyWithOnyxSubscibers = true,
 ): void {
+    cache.invalidateCollection(collectionKey);
+
     // We prepare the "cached collection" which is the entire collection + the new partial data that
     // was merged in via mergeCollection().
     const cachedCollection = getCachedCollection(collectionKey);
@@ -807,6 +810,8 @@ function keyChanged<TKey extends OnyxKey>(
     }
 
     if (collectionKey) {
+        cache.invalidateCollection(collectionKey);
+
         // Getting the collection key from the specific key because only collection keys were stored in the mapping.
         stateMappingKeys = [...stateMappingKeys, ...(onyxKeyToSubscriptionIDs.get(collectionKey) ?? [])];
         if (stateMappingKeys.length === 0) {

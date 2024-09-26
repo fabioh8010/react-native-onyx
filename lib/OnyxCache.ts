@@ -1,7 +1,12 @@
 import {deepEqual} from 'fast-equals';
 import bindAll from 'lodash/bindAll';
 import utils from './utils';
-import type {OnyxKey, OnyxValue} from './types';
+import type {CollectionKeyBase, OnyxCollection, OnyxKey, OnyxValue} from './types';
+
+type CollectionStorageEntry<TKey extends CollectionKeyBase> = {
+    value: OnyxCollection<TKey>;
+    isUpdated: boolean;
+};
 
 /**
  * In memory cache providing data by reference
@@ -20,6 +25,8 @@ class OnyxCache {
     /** A map of cached values */
     private storageMap: Record<OnyxKey, OnyxValue<OnyxKey>>;
 
+    private collectionStorageMap: Map<CollectionKeyBase, CollectionStorageEntry<CollectionKeyBase>>;
+
     /**
      * Captured pending tasks for already running storage methods
      * Using a map yields better performance on operations such a delete
@@ -34,6 +41,7 @@ class OnyxCache {
         this.nullishStorageKeys = new Set();
         this.recentKeys = new Set();
         this.storageMap = {};
+        this.collectionStorageMap = new Map();
         this.pendingPromises = new Map();
 
         // bind all public methods to prevent problems with `this`
@@ -114,6 +122,44 @@ class OnyxCache {
             this.addToAccessedKeys(key);
         }
         return this.storageMap[key];
+    }
+
+    getCollection<TKey extends CollectionKeyBase>(key: TKey): OnyxCollection<CollectionKeyBase> {
+        let collectionStorageEntry = this.collectionStorageMap.get(key);
+
+        if (!collectionStorageEntry || !collectionStorageEntry.isUpdated) {
+            // It is possible we haven't loaded all keys yet so we do not know if the
+            // collection actually exists.
+            if (this.storageKeys.size === 0) {
+                return;
+            }
+
+            const values: OnyxCollection<unknown> = {};
+            this.storageKeys.forEach((cacheKey) => {
+                if (!cacheKey.startsWith(key)) {
+                    return;
+                }
+
+                values[cacheKey] = this.get(cacheKey);
+            });
+
+            collectionStorageEntry = {
+                value: values as OnyxCollection<CollectionKeyBase>,
+                isUpdated: true,
+            };
+
+            this.collectionStorageMap.set(key, collectionStorageEntry);
+        }
+
+        return collectionStorageEntry.value;
+    }
+
+    invalidateCollection<TKey extends CollectionKeyBase>(key: TKey): void {
+        const collectionStorageEntry = this.collectionStorageMap.get(key);
+
+        if (collectionStorageEntry) {
+            collectionStorageEntry.isUpdated = false;
+        }
     }
 
     /**
