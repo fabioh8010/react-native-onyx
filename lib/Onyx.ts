@@ -446,11 +446,13 @@ function mergeCollection<TKey extends CollectionKeyBase, TMap>(collectionKey: TK
  * @param keysToPreserve is a list of ONYXKEYS that should not be cleared with the rest of the data
  */
 function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
+    console.log('Onyx clear keysToPreserve', keysToPreserve);
     const defaultKeyStates = OnyxUtils.getDefaultKeyStates();
     const initialKeys = Object.keys(defaultKeyStates);
 
     return OnyxUtils.getAllKeys()
         .then((cachedKeys) => {
+            console.log('Onyx clear cachedKeys', cachedKeys);
             cache.clearNullishStorageKeys();
 
             const keysToBeClearedFromStorage: OnyxKey[] = [];
@@ -465,9 +467,13 @@ function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
             // 2. Any keys with a default state (because they need to remain in Onyx as their default, and setting them
             //      to null would cause unknown behavior)
             //   2.1 However, if a default key was explicitly set to null, we need to reset it to the default value
+            console.log('Onyx clear allKeys', allKeys);
             allKeys.forEach((key) => {
                 const isKeyToPreserve = keysToPreserve.includes(key);
                 const isDefaultKey = key in defaultKeyStates;
+                console.log('Onyx clear key', key);
+                console.log('Onyx clear isKeyToPreserve', isKeyToPreserve);
+                console.log('Onyx clear isDefaultKey', isDefaultKey);
 
                 // If the key is being removed or reset to default:
                 // 1. Update it in the cache
@@ -476,6 +482,8 @@ function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
                 if (!isKeyToPreserve) {
                     const oldValue = cache.get(key);
                     const newValue = defaultKeyStates[key] ?? null;
+                    console.log('Onyx clear !isKeyToPreserve oldValue', oldValue);
+                    console.log('Onyx clear !isKeyToPreserve newValue', newValue);
                     if (newValue !== oldValue) {
                         cache.set(key, newValue);
 
@@ -498,16 +506,20 @@ function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
                     }
                 }
 
+                console.log('Onyx clear isKeyToPreserve || isDefaultKey', isKeyToPreserve || isDefaultKey);
                 if (isKeyToPreserve || isDefaultKey) {
                     return;
                 }
 
+                console.log('Onyx clear keysToBeClearedFromStorage', keysToBeClearedFromStorage);
                 // If it isn't preserved and doesn't have a default, we'll remove it
                 keysToBeClearedFromStorage.push(key);
             });
 
             const updatePromises: Array<Promise<void>> = [];
 
+            console.log('Onyx clear keyValuesToResetIndividually', keyValuesToResetIndividually);
+            console.log('Onyx clear keyValuesToResetAsCollection', keyValuesToResetAsCollection);
             // Notify the subscribers for each key/value group so they can receive the new values
             Object.entries(keyValuesToResetIndividually).forEach(([key, value]) => {
                 updatePromises.push(OnyxUtils.scheduleSubscriberUpdate(key, value, cache.get(key, false)));
@@ -525,8 +537,10 @@ function clear(keysToPreserve: OnyxKey[] = []): Promise<void> {
                         return obj;
                     }, {}),
             );
+            console.log('Onyx clear defaultKeyValuePairs', defaultKeyValuePairs);
 
             // Remove only the items that we want cleared from storage, and reset others to default
+            console.log('Onyx clear keysToBeClearedFromStorage', keysToBeClearedFromStorage);
             keysToBeClearedFromStorage.forEach((key) => cache.drop(key));
             return Storage.removeItems(keysToBeClearedFromStorage)
                 .then(() => Storage.multiSet(defaultKeyValuePairs))

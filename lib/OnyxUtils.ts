@@ -239,7 +239,9 @@ function reduceCollectionWithSelector<TKey extends CollectionKeyBase, TMap, TRet
 
 /** Get some data from the store */
 function get<TKey extends OnyxKey, TValue extends OnyxValue<TKey>>(key: TKey): Promise<TValue> {
+    console.log('OnyxUtils get key', key);
     // When we already have the value in cache - resolve right away
+    console.log('OnyxUtils get hasCacheForKey', cache.hasCacheForKey(key));
     if (cache.hasCacheForKey(key)) {
         return Promise.resolve(cache.get(key) as TValue);
     }
@@ -247,6 +249,7 @@ function get<TKey extends OnyxKey, TValue extends OnyxValue<TKey>>(key: TKey): P
     const taskName = `get:${key}`;
 
     // When a value retrieving task for this key is still running hook to it
+    console.log('OnyxUtils get hasPendingTask', cache.hasPendingTask(taskName));
     if (cache.hasPendingTask(taskName)) {
         return cache.getTaskPromise(taskName) as Promise<TValue>;
     }
@@ -254,6 +257,7 @@ function get<TKey extends OnyxKey, TValue extends OnyxValue<TKey>>(key: TKey): P
     // Otherwise retrieve the value from storage and capture a promise to aid concurrent usages
     const promise = Storage.getItem(key)
         .then((val) => {
+            console.log('OnyxUtils get Storage.getItem val', val);
             if (val === undefined) {
                 cache.addNullishStorageKey(key);
                 return undefined;
@@ -952,6 +956,9 @@ function keyChanged<TKey extends OnyxKey>(
  *     - triggers the callback function
  */
 function sendDataToConnection<TKey extends OnyxKey>(mapping: Mapping<TKey>, value: OnyxValue<TKey> | null, matchedKey: TKey | undefined, isBatched: boolean): void {
+    console.log('OnyxUtils sendDataToConnection key', mapping.key);
+    console.log('OnyxUtils sendDataToConnection value', value);
+    console.log('OnyxUtils sendDataToConnection callbackToStateMapping[mapping.subscriptionID]', callbackToStateMapping[mapping.subscriptionID]);
     // If the mapping no longer exists then we should not send any data.
     // This means our subscriber disconnected or withOnyx wrapped component unmounted.
     if (!callbackToStateMapping[mapping.subscriptionID]) {
@@ -991,6 +998,9 @@ function sendDataToConnection<TKey extends OnyxKey>(mapping: Mapping<TKey>, valu
     lastConnectionCallbackData.get(mapping.subscriptionID);
 
     // If the value has not changed we do not need to trigger the callback
+    console.log('OnyxUtils sendDataToConnection valueToPass', valueToPass);
+    console.log('OnyxUtils sendDataToConnection lastValue', lastValue);
+    console.log('OnyxUtils sendDataToConnection lastConnectionCallbackData.has(mapping.subscriptionID)', lastConnectionCallbackData.has(mapping.subscriptionID));
     if (lastConnectionCallbackData.has(mapping.subscriptionID) && valueToPass === lastValue) {
         return;
     }
@@ -1260,6 +1270,7 @@ function doAllCollectionItemsBelongToSameParent<TKey extends CollectionKeyBase>(
  * @returns The subscription ID to use when calling `OnyxUtils.unsubscribeFromKey()`.
  */
 function subscribeToKey<TKey extends OnyxKey>(connectOptions: ConnectOptions<TKey>): number {
+    console.log('OnyxUtils subscribeToKey key', connectOptions.key);
     const mapping = connectOptions as Mapping<TKey>;
     const subscriptionID = lastSubscriptionID++;
     callbackToStateMapping[subscriptionID] = mapping as Mapping<OnyxKey>;
@@ -1301,6 +1312,7 @@ function subscribeToKey<TKey extends OnyxKey>(connectOptions: ConnectOptions<TKe
             // directly via connect() they will simply get a null value sent to them without any information about which key matched
             // since there are none matched. In withOnyx() we wait for all connected keys to return a value before rendering the child
             // component. This null value will be filtered out so that the connected component can utilize defaultProps.
+            console.log('OnyxUtils matchingKeys', matchingKeys);
             if (matchingKeys.length === 0) {
                 if (mapping.key && !isCollectionKey(mapping.key)) {
                     cache.addNullishStorageKey(mapping.key);

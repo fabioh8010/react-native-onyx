@@ -146,6 +146,9 @@ function useOnyx<TKey extends OnyxKey, TReturnValue = OnyxValue<TKey>>(key: TKey
     }, [key, options?.canEvict]);
 
     const getSnapshot = useCallback(() => {
+        console.log('useOnyx getSnapshot');
+        console.log('useOnyx isFirstConnectionRef.current', isFirstConnectionRef.current);
+        console.log('useOnyx shouldGetCachedValueRef.current', shouldGetCachedValueRef.current);
         // We get the value from cache while the first connection to Onyx is being made,
         // so we can return any cached value right away. After the connection is made, we only
         // update `newValueRef` when `Onyx.connect()` callback is fired.
@@ -162,6 +165,7 @@ function useOnyx<TKey extends OnyxKey, TReturnValue = OnyxValue<TKey>>(key: TKey
         }
 
         const hasCacheForKey = OnyxCache.hasCacheForKey(key);
+        console.log('useOnyx hasCacheForKey', hasCacheForKey);
 
         // Since the fetch status can be different given the use cases below, we define the variable right away.
         let newFetchStatus: FetchStatus | undefined;
@@ -195,12 +199,17 @@ function useOnyx<TKey extends OnyxKey, TReturnValue = OnyxValue<TKey>>(key: TKey
         // and the result to be returned by the hook.
         // If the cache was set for the first time, we also update the cached value and the result.
         const isCacheSetFirstTime = previousValueRef.current === null && hasCacheForKey;
+        console.log('useOnyx previousValueRef.current', previousValueRef.current);
+        console.log('useOnyx newValueRef.current', newValueRef.current);
+        console.log('useOnyx isCacheSetFirstTime', isCacheSetFirstTime);
+        console.log('useOnyx areValuesEqual', areValuesEqual);
         if (isCacheSetFirstTime || !areValuesEqual) {
             previousValueRef.current = newValueRef.current;
 
             // If the new value is `null` we default it to `undefined` to ensure the consumer gets a consistent result from the hook.
             resultRef.current = [previousValueRef.current as CachedValue<TKey, TReturnValue>, {status: newFetchStatus ?? 'loaded'}];
         }
+        console.log('useOnyx resultRef.current', resultRef.current);
 
         return resultRef.current;
     }, [key, selectorRef, options?.allowStaleData, options?.initialValue]);
