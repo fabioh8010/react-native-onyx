@@ -552,31 +552,50 @@ function addAllSafeEvictionKeysToRecentlyAccessedList(): Promise<void> {
     });
 }
 
-function getCachedCollection<TKey extends CollectionKeyBase>(collectionKey: TKey, collectionMemberKeys?: string[]): NonNullable<OnyxCollection<KeyValueMapping[TKey]>> {
-    const allKeys = collectionMemberKeys || cache.getAllKeys();
-    const collection: OnyxCollection<KeyValueMapping[TKey]> = {};
+function getCachedCollection<TKey extends CollectionKeyBase>(collectionKey: TKey): NonNullable<OnyxCollection<KeyValueMapping[TKey]>> {
+    return cache.getCollection(collectionKey) ?? {};
+    // const allKeys = collectionMemberKeys || cache.getAllKeys();
+    // const collection: OnyxCollection<KeyValueMapping[TKey]> = {};
 
-    const collectionKeyLength = collectionKey.length;
+    // const collectionKeyLength = collectionKey.length;
 
-    // forEach exists on both Set and Array
-    allKeys.forEach((key) => {
-        // If we don't have collectionMemberKeys array then we have to check whether a key is a collection member key.
-        // Because in that case the keys will be coming from `cache.getAllKeys()` and we need to filter out the keys that
-        // are not part of the collection.
-        if (!collectionMemberKeys && !isCollectionMemberKey(collectionKey, key, collectionKeyLength)) {
-            return;
-        }
+    // // const allCacheKeys = cache.getAllKeys();
 
-        const cachedValue = cache.get(key);
+    // // // It is possible we haven't loaded all keys yet so we do not know if the
+    // // // collection actually exists.
+    // // if (allCacheKeys.size === 0) {
+    // //     return;
+    // // }
 
-        if (cachedValue === undefined && !cache.hasNullishStorageKey(key)) {
-            return;
-        }
+    // // const values: OnyxCollection<KeyValueMapping[TKey]> = {};
+    // // allCacheKeys.forEach((cacheKey) => {
+    // //     if (!cacheKey.startsWith(key)) {
+    // //         return;
+    // //     }
 
-        collection[key] = cache.get(key);
-    });
+    // //     values[cacheKey] = cache.get(cacheKey);
+    // // });
+    // // val = values;
 
-    return collection;
+    // // forEach exists on both Set and Array
+    // allKeys.forEach((key) => {
+    //     // If we don't have collectionMemberKeys array then we have to check whether a key is a collection member key.
+    //     // Because in that case the keys will be coming from `cache.getAllKeys()` and we need to filter out the keys that
+    //     // are not part of the collection.
+    //     if (!collectionMemberKeys && !isCollectionMemberKey(collectionKey, key, collectionKeyLength)) {
+    //         return;
+    //     }
+
+    //     const cachedValue = cache.get(key);
+
+    //     // if (cachedValue === undefined && !cache.hasNullishStorageKey(key)) {
+    //     //     return;
+    //     // }
+
+    //     collection[key] = cache.get(key);
+    // });
+
+    // return collection;
 }
 
 /**

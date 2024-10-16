@@ -64,24 +64,7 @@ function tryGetCachedValue<TKey extends OnyxKey>(key: TKey): OnyxValue<OnyxKey> 
         return OnyxCache.get(key);
     }
 
-    const allCacheKeys = OnyxCache.getAllKeys();
-
-    // It is possible we haven't loaded all keys yet so we do not know if the
-    // collection actually exists.
-    if (allCacheKeys.size === 0) {
-        return;
-    }
-
-    const values: OnyxCollection<KeyValueMapping[TKey]> = {};
-    allCacheKeys.forEach((cacheKey) => {
-        if (!cacheKey.startsWith(key)) {
-            return;
-        }
-
-        values[cacheKey] = OnyxCache.get(cacheKey);
-    });
-
-    return values;
+    return OnyxCache.getCollection(key);
 }
 
 /**

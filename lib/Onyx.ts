@@ -358,7 +358,7 @@ function mergeCollection<TKey extends CollectionKeyBase, TMap>(collectionKey: TK
 
             const existingKeys = keys.filter((key) => persistedKeys.has(key));
 
-            const cachedCollectionForExistingKeys = OnyxUtils.getCachedCollection(collectionKey, existingKeys);
+            const cachedCollectionForExistingKeys = OnyxUtils.getCachedCollection(collectionKey);
 
             const existingKeyCollection = existingKeys.reduce((obj: OnyxInputKeyValueMapping, key) => {
                 const {isCompatible, existingValueType, newValueType} = utils.checkCompatibilityWithExistingValue(mergedCollection[key], cachedCollectionForExistingKeys[key]);
