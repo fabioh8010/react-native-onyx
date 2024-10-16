@@ -1,5 +1,5 @@
 import {act, renderHook} from '@testing-library/react-native';
-import type {OnyxEntry} from '../../lib';
+import type {OnyxCollection, OnyxEntry} from '../../lib';
 import Onyx, {useOnyx} from '../../lib';
 import OnyxUtils from '../../lib/OnyxUtils';
 import StorageMock from '../../lib/storage';
@@ -176,7 +176,11 @@ describe('useOnyx', () => {
             const {result} = renderHook(() =>
                 useOnyx(ONYXKEYS.COLLECTION.TEST_KEY, {
                     // @ts-expect-error bypass
-                    selector: (entry: OnyxEntry<{id: string; name: string}>) => entry?.id,
+                    selector: (entries: OnyxCollection<{id: string; name: string}>) =>
+                        Object.entries(entries ?? {}).reduce<NonNullable<OnyxCollection<string>>>((acc, [key, value]) => {
+                            acc[key] = value?.id;
+                            return acc;
+                        }, {}),
                 }),
             );
 
@@ -463,7 +467,7 @@ describe('useOnyx', () => {
             expect(result.current[1].status).toEqual('loaded');
         });
 
-        it('should return initial value and loaded state, and after merge return updated value and loaded state', async () => {
+        it('should return `undefined` and loaded state if using `initialValue`, and after merge return updated value and loaded state', async () => {
             await StorageMock.setItem(ONYXKEYS.TEST_KEY, 'test1');
 
             const {result} = renderHook(() =>
@@ -475,16 +479,16 @@ describe('useOnyx', () => {
 
             await act(async () => waitForPromisesToResolve());
 
-            expect(result.current[0]).toEqual('initial value');
+            expect(result.current[0]).toBeUndefined();
             expect(result.current[1].status).toEqual('loaded');
 
-            await act(async () => Onyx.merge(ONYXKEYS.TEST_KEY, 'test2'));
+            await act(async () => Onyx.merge(ONYXKEYS.TEST_KEY, 'test'));
 
-            expect(result.current[0]).toEqual('test2');
+            expect(result.current[0]).toEqual('test');
             expect(result.current[1].status).toEqual('loaded');
         });
 
-        it('should return selected value and loaded state, and after merge return updated selected value and loaded state', async () => {
+        it('should return `undefined` value and loaded state if using `selector`, and after merge return selected value and loaded state', async () => {
             await StorageMock.setItem(ONYXKEYS.TEST_KEY, 'test1');
 
             const {result} = renderHook(() =>
@@ -497,12 +501,12 @@ describe('useOnyx', () => {
 
             await act(async () => waitForPromisesToResolve());
 
-            expect(result.current[0]).toEqual('undefined_selected');
+            expect(result.current[0]).toBeUndefined();
             expect(result.current[1].status).toEqual('loaded');
 
-            await act(async () => Onyx.merge(ONYXKEYS.TEST_KEY, 'test2'));
+            await act(async () => Onyx.merge(ONYXKEYS.TEST_KEY, 'test'));
 
-            expect(result.current[0]).toEqual('test2_selected');
+            expect(result.current[0]).toEqual('test_selected');
             expect(result.current[1].status).toEqual('loaded');
         });
     });
